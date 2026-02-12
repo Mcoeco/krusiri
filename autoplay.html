@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="theme-color" content="#0b0e14">
+  <title>Smart Parcel Locker – Telegram Notification System</title>
+
+  <style>
+    :root{
+      --bg:#0b0e14;
+      --surface:#111623;
+      --line:#1e2440;
+      --text:#f2f4fa;
+      --muted:#a8b0c9;
+      --accent:#4f8cff;
+      --radius:18px;
+    }
+
+    [data-theme="light"] {
+      --bg:#f5f7fa;
+      --surface:#ffffff;
+      --line:#e1e4ea;
+      --text:#1a1d29;
+      --muted:#6b7280;
+      --accent:#3b82f6;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0;font-family: system-ui, -apple-system, Segoe UI, sans-serif;}
+    body{background:var(--bg);color:var(--text);overflow-x:hidden;transition:background .3s, color .3s;}
+
+    header{
+      position:sticky; top:0; z-index:100;
+      background:rgba(11,14,20,.95);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--line);
+      transition:background .3s, border-color .3s;
+    }
+
+    [data-theme="light"] header{
+      background:rgba(255,255,255,.95);
+    }
+
+    .nav{
+      max-width:1200px;
+      margin:auto;
+      padding:16px 20px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:12px;
+    }
+
+    .nav .brand{
+      font-weight:600; 
+      letter-spacing:.4px; 
+      font-size:clamp(14px, 3vw, 15px);
+      flex-shrink:0;
+    }
+    
+    .nav-links{
+      display:flex; 
+      gap:4px; 
+      flex-wrap:wrap;
+      justify-content:center;
+      width:100%;
+    }
+    
+    .nav a{
+      color:var(--muted); 
+      text-decoration:none; 
+      padding:8px 12px; 
+      font-size:clamp(13px, 2.5vw, 14px); 
+      border-radius:8px; 
+      transition:.2s;
+      white-space:nowrap;
+      min-height:44px;
+      display:flex;
+      align-items:center;
+    }
+    
+    .nav a:hover, .nav a:active{
+      color:var(--text); 
+      background:rgba(79,140,255,.1);
+    }
+
+    .theme-toggle{
+      background:var(--surface);
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:8px 12px;
+      cursor:pointer;
+      font-size:18px;
+      transition:.2s;
+      min-height:44px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .theme-toggle:hover{
+      background:rgba(79,140,255,.1);
+    }
+
+    /* Presentation Controls */
+    .presentation-controls{
+      position:fixed;
+      bottom:30px;
+      left:50%;
+      transform:translateX(-50%);
+      background:var(--surface);
+      border:1px solid var(--line);
+      border-radius:50px;
+      padding:12px 20px;
+      display:flex;
+      align-items:center;
+      gap:16px;
+      z-index:999;
+      box-shadow:0 8px 30px rgba(0,0,0,.3);
+      transition:all .3s;
+    }
+
+    .presentation-controls button{
+      background:none;
+      border:none;
+      color:var(--text);
+      cursor:pointer;
+      font-size:20px;
+      padding:8px;
+      border-radius:8px;
+      transition:.2s;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:40px;
+      height:40px;
+    }
+
+    .presentation-controls button:hover{
+      background:rgba(79,140,255,.15);
+    }
+
+    .presentation-controls button:active{
+      transform:scale(0.95);
+    }
+
+    .section-indicator{
+      font-size:13px;
+      color:var(--muted);
+      min-width:200px;
+      text-align:center;
+      font-weight:500;
+    }
+
+    .progress-dots{
+      display:flex;
+      gap:6px;
+    }
+
+    .progress-dots span{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:var(--line);
+      transition:.3s;
+    }
+
+    .progress-dots span.active{
+      background:var(--accent);
+      width:24px;
+      border-radius:4px;
+    }
+
+    /* Responsive controls */
+    @media(max-width:600px){
+      .presentation-controls{
+        bottom:20px;
+        padding:10px 16px;
+        gap:12px;
+      }
+      
+      .presentation-controls button{
+        width:36px;
+        height:36px;
+        font-size:18px;
+      }
+      
+      .section-indicator{
+        font-size:12px;
+        min-width:100px;
+      }
+      
+      .progress-dots{
+        gap:4px;
+      }
+      
+      .progress-dots span{
+        width:6px;
+        height:6px;
+      }
+      
+      .progress-dots span.active{
+        width:18px;
+      }
+    }
+
+    main{
+      max-width:1200px; 
+      margin:auto; 
+      padding:40px 16px 80px;
+    }
+
+    .hero{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:32px;
+      align-items:center;
+      margin-top:20px;
+    }
+
+    .hero h1{
+      font-size:clamp(24px, 6vw, 48px); 
+      line-height:1.2; 
+      margin-bottom:16px;
+    }
+    
+    .hero p{
+      color:var(--muted); 
+      max-width:100%; 
+      font-size:clamp(14px, 3.5vw, 16px); 
+      line-height:1.8;
+    }
+
+    .media{
+      background:var(--surface);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:12px;
+      display:flex;
+      justify-content:center;
+      transition:background .3s, border-color .3s;
+    }
+
+    iframe{
+      width:100%;
+      max-width:100%;
+      aspect-ratio:16/9;
+      border-radius:12px;
+      background:black;
+    }
+
+    section{margin-top:80px;}
+
+    .section-title{
+      font-size:clamp(18px, 4vw, 22px);
+      margin-bottom:24px;
+      letter-spacing:.3px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .section-title::before{
+      content:"";
+      width:4px;
+      height:20px;
+      background:var(--accent);
+      border-radius:3px;
+      flex-shrink:0;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:18px;
+    }
+
+    .card{
+      background:var(--surface);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:18px;
+      transition:.25s ease;
+    }
+
+    .card:active{
+      transform: scale(0.98);
+      border-color:var(--accent);
+    }
+    
+    .card h3{
+      font-size:clamp(15px, 3.5vw, 16px); 
+      margin-bottom:8px;
+    }
+    
+    .card p{
+      font-size:clamp(13px, 3vw, 14.5px); 
+      color:var(--muted); 
+      line-height:1.8;
+    }
+
+    .card ul{
+      list-style:none;
+      padding:0;
+      margin-top:12px;
+    }
+
+    .card li{
+      padding:6px 0;
+      color:var(--muted);
+      font-size:clamp(13px, 3vw, 14.5px);
+      line-height:1.6;
+      position:relative;
+      padding-left:20px;
+    }
+
+    .card li::before{
+      content:"→";
+      position:absolute;
+      left:0;
+      color:var(--accent);
+    }
+
+    .step-number{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:28px;
+      height:28px;
+      border-radius:50%;
+      background:var(--accent);
+      color:white;
+      font-size:14px;
+      font-weight:600;
+      margin-right:8px;
+      flex-shrink:0;
+    }
+
+    pre{
+      background:#0e1324;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+      overflow:auto;
+      font-size:clamp(11px, 2.8vw, 13.5px);
+      line-height:1.7;
+      color:#cdd6f4;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    [data-theme="light"] pre{
+      background:#f8fafc;
+      color:#334155;
+      border-color:var(--line);
+    }
+
+    /* Generator Styles */
+    .form-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:16px;
+      margin-bottom:24px;
+    }
+
+    .form-group{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    label{
+      font-size:clamp(12px, 3vw, 13px);
+      color:var(--muted);
+      font-weight:500;
+    }
+
+    input{
+      width:100%;
+      padding:14px 16px;
+      border-radius:10px;
+      background:var(--surface);
+      border:1px solid var(--line);
+      color:var(--text);
+      font-size:clamp(14px, 3.5vw, 16px);
+      transition:.2s;
+      min-height:48px;
+    }
+
+    input:focus{
+      outline:none;
+      border-color:var(--accent);
+    }
+
+    .btn{
+      background:linear-gradient(135deg, #4f8cff 0%, #3d6fd9 100%);
+      border:none;
+      color:#fff;
+      padding:14px 24px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:500;
+      font-size:clamp(13px, 3.2vw, 14px);
+      transition:.3s;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:48px;
+      width:100%;
+    }
+
+    .btn:active{
+      transform: scale(0.97);
+    }
+
+    .btn-secondary{
+      background:rgba(79,140,255,.15);
+      border:1px solid var(--line);
+      color:var(--accent);
+    }
+
+    .btn-secondary:active{
+      background:rgba(79,140,255,.25);
+    }
+
+    .actions{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .code-output{
+      margin-top:24px;
+      position:relative;
+    }
+
+    .copy-indicator{
+      position:fixed;
+      top:50%;
+      left:50%;
+      transform:translate(-50%, -50%);
+      background:rgba(79,255,140,.95);
+      color:#000;
+      padding:12px 24px;
+      border-radius:8px;
+      font-size:14px;
+      font-weight:600;
+      opacity:0;
+      transition:.3s;
+      pointer-events:none;
+      z-index:1000;
+      box-shadow:0 4px 20px rgba(0,0,0,.3);
+    }
+
+    .copy-indicator.show{opacity:1;}
+
+    .highlight-box{
+      background:rgba(79,140,255,.08);
+      border-left:3px solid var(--accent);
+      padding:16px 20px;
+      border-radius:8px;
+      margin:20px 0;
+    }
+
+    .highlight-box p{
+      color:var(--text);
+      line-height:1.8;
+      font-size:clamp(13px, 3vw, 15px);
+    }
+
+    footer{
+      margin-top:100px;
+      padding:40px 20px;
+      text-align:center;
+      color:var(--muted);
+      border-top:1px solid var(--line);
+      font-size:clamp(12px, 3vw, 14px);
+      line-height:1.8;
+    }
+
+    /* Tablet and up */
+    @media(min-width:600px){
+      .grid{
+        grid-template-columns:repeat(2, 1fr);
+        gap:20px;
+      }
+      
+      .form-grid{
+        grid-template-columns:repeat(2, 1fr);
+        gap:18px;
+      }
+      
+      .actions{
+        flex-direction:row;
+      }
+      
+      .btn{
+        width:auto;
+      }
+      
+      iframe{
+        max-width:540px;
+      }
+      
+      .nav-links{
+        width:auto;
+      }
+    }
+
+    /* Desktop */
+    @media(min-width:900px){
+      main{
+        padding:60px 20px 120px;
+      }
+      
+      .hero{
+        grid-template-columns: 1.2fr .8fr;
+        gap:40px;
+        margin-top:30px;
+      }
+      
+      .grid{
+        grid-template-columns:repeat(auto-fit, minmax(230px,1fr));
+        gap:22px;
+      }
+      
+      .card:hover{
+        transform: translateY(-6px);
+        border-color:var(--accent);
+      }
+      
+      .btn:hover{
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(79,140,255,.3);
+      }
+      
+      .btn-secondary:hover{
+        background:rgba(79,140,255,.25);
+        box-shadow: 0 4px 15px rgba(79,140,255,.2);
+      }
+      
+      section{
+        margin-top:120px;
+      }
+    }
+
+    /* Large desktop */
+    @media(min-width:1200px){
+      .form-grid{
+        grid-template-columns:repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="brand">Smart Parcel Locker</div>
+    <div class="nav-links">
+      <a href="#about">เกี่ยวกับโครงงาน</a>
+      <a href="#demo">วิดีโอสาธิต</a>
+      <a href="#components">อุปกรณ์ที่ใช้</a>
+      <a href="#build">วิธีการสร้าง</a>
+      <a href="#config">ตั้งค่าระบบ</a>
+      <a href="#generator">เครื่องมือสร้างโค้ด</a>
+      <a href="#workflow">ขั้นตอนการทำงาน</a>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="สลับธีม">
+      <span id="theme-icon">🌙</span>
+    </button>
+  </div>
+</header>
+
+<!-- Presentation Controls -->
+<div class="presentation-controls">
+  <button onclick="prevSection()" title="ย้อนกลับ">⏮</button>
+  <button onclick="togglePresentation()" id="playBtn" title="เล่น/หยุด">▶️</button>
+  <button onclick="nextSection()" title="ถัดไป">⏭</button>
+  <div class="section-indicator" id="sectionName">พร้อมนำเสนอ</div>
+  <div class="progress-dots" id="progressDots"></div>
+  <button onclick="toggleFullscreen()" id="fullscreenBtn" title="เต็มหน้าจอ">⛶</button>
+</div>
+
+<main>
+
+  <section id="about" class="hero">
+    <div>
+      <h1>ตู้รับพัสดุอัจฉริยะ แจ้งเตือนผ่าน Telegram</h1>
+      <p>
+        โครงงานนี้ทำขึ้นเพื่อแก้ปัญหาการรับพัสดุที่ไม่สะดวก โดยเฉพาะเวลาไม่อยู่บ้าน 
+        ตู้จะตรวจจับพัสดุที่ถูกส่งมาโดยอัตโนมัติ แล้วส่งข้อความแจ้งเตือนมาที่ Telegram ทันที 
+        ทำให้รู้ว่ามีพัสดุมาถึงแล้ว ไม่ต้องกลัวพัสดุหาย หรือถูกเอาไปโดยไม่รู้ตัว
+      </p>
+      <div class="highlight-box" style="margin-top:20px;">
+        <p style="font-size:clamp(12px,3vw,14px);">
+          💡 <strong>โหมดนำเสนออัตโนมัติ:</strong> กดปุ่ม ▶️ ด้านล่างเพื่อเริ่มนำเสนอแบบอัตโนมัติ 
+          หรือใช้ปุ่มลูกศร ←/→ และ Space เพื่อเปลี่ยนหน้า กด P เพื่อเล่น/หยุด กด F เพื่อเต็มจอ
+        </p>
+      </div>
+    </div>
+
+    <div class="media" id="demo">
+      <iframe
+        src="https://www.youtube.com/embed/8VbhOzaeOGo"
+        frameborder="0" 
+        allowfullscreen
+        title="Smart Parcel Locker Demo Video">
+      </iframe>
+    </div>
+  </section>
+
+  <section id="components">
+    <div class="section-title">อุปกรณ์และวัสดุที่ใช้</div>
+    
+    <div class="highlight-box">
+      <p><strong>งบประมาณรวม:</strong> ประมาณ 800-1,200 บาท (ขึ้นอยู่กับร้านที่ซื้อและคุณภาพของตู้)</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>1. NodeMCU ESP8266</h3>
+        <p><strong>ราคา:</strong> 120-180 บาท</p>
+        <ul>
+          <li>บอร์ดไมโครคอนโทรลเลอร์ที่มี Wi-Fi ในตัว</li>
+          <li>ใช้เชื่อมต่ออินเทอร์เน็ตและส่งข้อความแจ้งเตือน</li>
+          <li>สั่งงานอุปกรณ์ต่างๆ เช่น LED และเซนเซอร์</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>2. Infrared Sensor (IR Sensor)</h3>
+        <p><strong>ราคา:</strong> 15-30 บาท</p>
+        <ul>
+          <li>ตรวจจับว่ามีพัสดุหรือสิ่งของอยู่ในตู้หรือไม่</li>
+          <li>ใช้หลักการสะท้อนแสงอินฟราเรด</li>
+          <li>ระยะตรวจจับประมาณ 2-30 ซม.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>3. LED สีแดงและสีเขียว</h3>
+        <p><strong>ราคา:</strong> 2-5 บาท/ดวง</p>
+        <ul>
+          <li>แสดงสถานะการทำงานของตู้</li>
+          <li>สีแดง = มีพัสดุในตู้</li>
+          <li>สีเขียว = ไม่มีพัสดุ/ตู้ว่าง</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>4. ตัวต้านทาน 220Ω</h3>
+        <p><strong>ราคา:</strong> 1-2 บาท (แพ็คละ 10 ตัว)</p>
+        <ul>
+          <li>ใช้กับ LED เพื่อจำกัดกระแส</li>
+          <li>ป้องกัน LED ไหม้</li>
+          <li>ใช้ 2 ตัว (LED แต่ละดวง 1 ตัว)</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>5. Breadboard และสายจั๊มเปอร์</h3>
+        <p><strong>ราคา:</strong> 30-60 บาท</p>
+        <ul>
+          <li>ใช้ต่อวงจรโดยไม่ต้องบัดกรี</li>
+          <li>เปลี่ยนแปลงวงจรได้ง่าย</li>
+          <li>สายจั๊มเปอร์ Male-Male และ Male-Female</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>6. สาย USB Micro</h3>
+        <p><strong>ราคา:</strong> 20-40 บาท</p>
+        <ul>
+          <li>ใช้เชื่อมต่อ NodeMCU กับคอมพิวเตอร์</li>
+          <li>อัปโหลดโปรแกรม</li>
+          <li>จ่ายไฟให้กับบอร์ด</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>7. กล่องตู้รับพัสดุ</h3>
+        <p><strong>ราคา:</strong> 200-500 บาท</p>
+        <ul>
+          <li>ขนาดพอใส่พัสดุได้</li>
+          <li>แนะนำกล่องพลาสติกหรือไม้</li>
+          <li>ทำช่องสำหรับใส่พัสดุและติดตั้งเซนเซอร์</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>8. อะแดปเตอร์ 5V 1A (ถ้าต้องการ)</h3>
+        <p><strong>ราคา:</strong> 50-100 บาท</p>
+        <ul>
+          <li>จ่ายไฟให้ NodeMCU แบบถาวร</li>
+          <li>ไม่ต้องเสียบคอมพิวเตอร์</li>
+          <li>ใช้ปลั๊กไฟบ้านได้เลย</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="build">
+    <div class="section-title">ขั้นตอนการสร้างและประกอบ</div>
+    
+    <div class="card">
+      <h3><span class="step-number">1</span>เตรียม Telegram Bot</h3>
+      <p>ก่อนอื่นต้องสร้างบอททางเทเลแกรมก่อน เพื่อให้ระบบส่งข้อความมาหาเราได้</p>
+      <ul>
+        <li>เปิดแอป Telegram ค้นหา "BotFather"</li>
+        <li>พิมพ์คำสั่ง /newbot แล้วตั้งชื่อบอท</li>
+        <li>ระบบจะให้ Token มา (เก็บไว้ใช้ในโค้ด)</li>
+        <li>หา Chat ID โดยส่งข้อความหาบอท แล้วเข้า https://api.telegram.org/bot[TOKEN]/getUpdates</li>
+        <li>เก็บตัวเลข Chat ID ไว้</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="step-number">2</span>ติดตั้ง Arduino IDE และ Library</h3>
+      <p>ต้องติดตั้งโปรแกรมสำหรับเขียนโค้ดและอัปโหลดเข้า ESP8266</p>
+      <ul>
+        <li>ดาวน์โหลด Arduino IDE จาก arduino.cc</li>
+        <li>เปิดโปรแกรม ไปที่ File > Preferences</li>
+        <li>ใส่ URL: http://arduino.esp8266.com/stable/package_esp8266com_index.json</li>
+        <li>ไปที่ Tools > Board > Boards Manager ค้นหา "ESP8266" แล้วติดตั้ง</li>
+        <li>ติดตั้ง Library: UniversalTelegramBot (ที่ Sketch > Include Library > Manage Libraries)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="step-number">3</span>ต่อวงจรบน Breadboard</h3>
+      <p>ต่ออุปกรณ์ต่างๆ เข้ากับ NodeMCU ตามแผนผัง</p>
+      <ul>
+        <li><strong>IR Sensor:</strong> VCC → 3V3, GND → GND, OUT → D5</li>
+        <li><strong>LED แดง:</strong> + (ขาบวก) → D1 ผ่านตัวต้านทาน 220Ω, - (ขาลบ) → GND</li>
+        <li><strong>LED เขียว:</strong> + (ขาบวก) → D2 ผ่านตัวต้านทาน 220Ω, - (ขาลบ) → GND</li>
+        <li>ตรวจสอบการต่อให้ถูกต้องก่อนเสียบไฟ</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="step-number">4</span>ใช้ Generator สร้างโค้ด</h3>
+      <p>ใช้เครื่องมือ Generator ด้านล่างเพื่อสร้างโค้ด</p>
+      <ul>
+        <li>กรอกชื่อ Wi-Fi และรหัสผ่าน</li>
+        <li>ใส่ Bot Token และ Chat ID ที่ได้จากขั้นตอนที่ 1</li>
+        <li>ปรับค่า PIN ให้ตรงกับวงจรที่ต่อ</li>
+        <li>คลิก "Copy Full Code" หรือ "Download .ino"</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="step-number">5</span>อัปโหลดโค้ดเข้า ESP8266</h3>
+      <p>เปิด Arduino IDE แล้วอัปโหลดโค้ดที่สร้างไว้</p>
+      <ul>
+        <li>เปิดไฟล์ .ino ที่ดาวน์โหลดมา</li>
+        <li>เลือก Board: NodeMCU 1.0 (ESP-12E Module)</li>
+        <li>เลือก Port ที่ต่อ NodeMCU</li>
+        <li>กด Upload (ลูกศรชี้ขวา)</li>
+        <li>รอจนขึ้น "Done uploading"</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="step-number">6</span>ทดสอบระบบ</h3>
+      <p>ทดสอบว่าระบบทำงานได้ถูกต้องหรือไม่</p>
+      <ul>
+        <li>เปิด Serial Monitor (Ctrl+Shift+M) ตั้ง Baud Rate 115200</li>
+        <li>ดูว่า ESP8266 เชื่อมต่อ Wi-Fi สำเร็จหรือไม่</li>
+        <li>ลองนำมือหรือวัตถุเข้าใกล้ IR Sensor</li>
+        <li>ดูว่า Telegram ได้รับข้อความแจ้งเตือนหรือไม่</li>
+        <li>ทดสอบคำสั่ง: สถานะ, จำนวนพัสดุ, รีเซ็ต</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="step-number">7</span>ประกอบเข้ากล่อง</h3>
+      <p>นำอุปกรณ์ทั้งหมดใส่กล่องตู้รับพัสดุ</p>
+      <ul>
+        <li>เจาะรูติดตั้ง LED ด้านหน้ากล่อง</li>
+        <li>ติดตั้ง IR Sensor ตรงช่องใส่พัสดุ</li>
+        <li>วาง NodeMCU และ Breadboard ให้เรียบร้อย</li>
+        <li>เดินสายให้สวยงาม ไม่ให้ขาด</li>
+        <li>ปิดฝากล่อง แล้วทดสอบอีกครั้ง</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="step-number">8</span>นำไปใช้งานจริง</h3>
+      <p>วางตู้ไว้หน้าบ้านหรือจุดที่คนส่งพัสดุมักมาส่ง</p>
+      <ul>
+        <li>เสียบปลั๊กไฟหรือใช้ Power Bank</li>
+        <li>ตรวจสอบว่าเชื่อมต่อ Wi-Fi ได้</li>
+        <li>วางป้ายบอกพนักงานส่งพัสดุให้ใส่ในช่อง</li>
+        <li>เมื่อมีพัสดุมาส่ง จะได้รับแจ้งเตือนทันที</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="config">
+    <div class="section-title">การตั้งค่าระบบ</div>
+
+    <p style="color:var(--muted); max-width:700px; margin-bottom:18px; line-height:1.8; font-size:clamp(13px, 3vw, 15px);">
+      ส่วนนี้คือการตั้งค่าพื้นฐานในโค้ด ซึ่งสามารถแก้ไขได้ง่ายๆ ไม่ต้องเปลี่ยนโครงสร้างหลักของโปรแกรม 
+      ถ้าเปลี่ยน Wi-Fi หรือย้ายบ้าน ก็แค่แก้ตรงนี้แล้วอัปโหลดใหม่
+    </p>
+
+    <pre>/* ================== CONFIG ================== */
+#define WIFI_SSID     "ชื่อไวไฟของคุณ"
+#define WIFI_PASSWORD "รหัสไวไฟของคุณ"
+
+#define BOT_TOKEN "ใส่ Token จาก BotFather"
+#define CHAT_ID   "ใส่ Chat ID ของผู้รับข้อความ"
+
+/* ================== PIN SETUP ================== */
+#define SENSOR_PIN D5
+#define LED_RED    D1
+#define LED_GREEN  D2</pre>
+
+    <div class="grid" style="margin-top:26px;">
+      <div class="card">
+        <h3>WIFI_SSID</h3>
+        <p>ชื่อเครือข่าย Wi-Fi บ้านหรือที่ทำงาน ให้ใส่ตรงๆ ห้ามมีช่องว่างเกิน</p>
+      </div>
+      <div class="card">
+        <h3>WIFI_PASSWORD</h3>
+        <p>รหัสผ่าน Wi-Fi ต้องถูกต้องถึงจะเชื่อมต่อได้ ระวังพิมพ์ผิด</p>
+      </div>
+      <div class="card">
+        <h3>BOT_TOKEN</h3>
+        <p>รหัสลับของบอทที่ได้จาก BotFather ตัวยาวๆ ประมาณ 40-50 ตัวอักษร</p>
+      </div>
+      <div class="card">
+        <h3>CHAT_ID</h3>
+        <p>รหัสของคนที่จะรับข้อความ อาจเป็นตัวเลขบวกหรือลบก็ได้ ขึ้นอยู่กับว่าส่งหาคนเดียวหรือกลุ่ม</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="generator">
+    <div class="section-title">เครื่องมือสร้างโค้ดอัตโนมัติ</div>
+    
+    <p style="color:var(--muted); max-width:700px; margin-bottom:24px; line-height:1.8; font-size:clamp(13px, 3vw, 15px);">
+      ไม่ต้องเขียนโค้ดเอง แค่กรอกข้อมูลด้านล่าง โปรแกรมจะสร้างโค้ดให้อัตโนมัติ พร้อมใช้งานเลย 
+      แนะนำให้เก็บค่าเริ่มต้นไว้ก่อน ถ้าไม่แน่ใจว่าควรตั้งเท่าไหร่
+    </p>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>📡 WiFi SSID</label>
+        <input type="text" id="ssid" value="3bb_Q-pid_2.4G" placeholder="ชื่อ WiFi">
+      </div>
+      <div class="form-group">
+        <label>🔑 WiFi Password</label>
+        <input type="text" id="pass" value="0816034255" placeholder="รหัสผ่าน WiFi">
+      </div>
+      <div class="form-group">
+        <label>🤖 Bot Token</label>
+        <input type="text" id="token" value="PUT_YOUR_BOT_TOKEN" placeholder="Token จาก BotFather">
+      </div>
+      <div class="form-group">
+        <label>💬 Chat ID</label>
+        <input type="text" id="chatid" value="7109400069" placeholder="Chat ID">
+      </div>
+      <div class="form-group">
+        <label>📍 IR Sensor PIN</label>
+        <input type="text" id="ir" value="D5" placeholder="D5">
+      </div>
+      <div class="form-group">
+        <label>🔴 LED Red PIN</label>
+        <input type="text" id="red" value="D1" placeholder="D1">
+      </div>
+      <div class="form-group">
+        <label>🟢 LED Green PIN</label>
+        <input type="text" id="green" value="D2" placeholder="D2">
+      </div>
+      <div class="form-group">
+        <label>⏱️ IR Debounce (ms)</label>
+        <input type="number" id="debounce" value="400" placeholder="400">
+      </div>
+      <div class="form-group">
+        <label>⏳ Telegram Cooldown (ms)</label>
+        <input type="number" id="cooldown" value="1200" placeholder="1200">
+      </div>
+      <div class="form-group">
+        <label>🔄 Telegram Interval (ms)</label>
+        <input type="number" id="interval" value="900" placeholder="900">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" onclick="copyCode()">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+          <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+        </svg>
+        คัดลอกโค้ดทั้งหมด
+      </button>
+      <button class="btn btn-secondary" onclick="downloadCode()">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+          <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+        </svg>
+        ดาวน์โหลดไฟล์ .ino
+      </button>
+    </div>
+
+    <div class="code-output">
+      <div class="copy-indicator" id="copyIndicator">✓ คัดลอกแล้ว!</div>
+      <pre id="code"></pre>
+    </div>
+  </section>
+
+  <section id="workflow">
+    <div class="section-title">ขั้นตอนการทำงานของระบบ</div>
+    
+    <div class="highlight-box">
+      <p>ระบบทำงานแบบวนลูปตลอดเวลา ตรวจสอบเซนเซอร์และรอรับคำสั่งจาก Telegram อยู่เรื่อยๆ โดยไม่หยุด</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>1. ระบบเริ่มทำงาน</h3>
+        <ul>
+          <li>ESP8266 เชื่อมต่อ Wi-Fi ตามที่ตั้งค่าไว้</li>
+          <li>เชื่อมต่อกับ Telegram Bot API</li>
+          <li>ไฟ LED เขียวติด แสดงว่าพร้อมใช้งาน</li>
+          <li>ส่งข้อความแจ้งว่า "ระบบออนไลน์แล้ว" ไปที่ Telegram</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>2. ตรวจจับพัสดุ</h3>
+        <ul>
+          <li>เซนเซอร์ IR ส่งคลื่นอินฟราเรดออกมาตลอดเวลา</li>
+          <li>เมื่อมีพัสดุเข้ามา แสงจะสะท้อนกลับ</li>
+          <li>เซนเซอร์ตรวจจับแสงสะท้อน แล้วส่งสัญญาณไป ESP8266</li>
+          <li>ระบบใช้เทคนิค Debounce กรองสัญญาณรบกวน</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>3. ประมวลผลข้อมูล</h3>
+        <ul>
+          <li>ESP8266 รับสัญญาณจากเซนเซอร์</li>
+          <li>เพิ่มตัวนับจำนวนพัสดุ (irCount)</li>
+          <li>ตรวจสอบว่าควรส่งข้อความหรือไม่ (ป้องกันส่งซ้ำบ่อยเกิน)</li>
+          <li>เตรียมข้อมูลที่จะส่งไป Telegram</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>4. ส่งการแจ้งเตือน</h3>
+        <ul>
+          <li>สร้างข้อความแจ้งเตือน เช่น "📦 ตรวจพบพัสดุ รวมทั้งหมด: 1"</li>
+          <li>เชื่อมต่อกับ Telegram API ผ่าน HTTPS</li>
+          <li>ส่งข้อความไปยัง Chat ID ที่กำหนดไว้</li>
+          <li>บันทึกเวลาที่ส่งเพื่อไม่ให้ส่งบ่อยเกินไป</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>5. แสดงสถานะด้วย LED</h3>
+        <ul>
+          <li>ถ้ามีพัสดุ (irCount > 0) → ไฟแดงติด</li>
+          <li>ถ้าไม่มีพัสดุ (irCount = 0) → ไฟเขียวติด</li>
+          <li>เมื่อตรวจจับพัสดุใหม่ ไฟแดงกะพริบสั้นๆ</li>
+          <li>ช่วยให้รู้สถานะได้แค่มองที่ตู้</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>6. รอรับคำสั่งจาก Telegram</h3>
+        <ul>
+          <li>ระบบตรวจสอบข้อความใหม่จาก Telegram ทุกๆ 900 ms</li>
+          <li>รองรับคำสั่ง: สถานะ, จำนวนพัสดุ, รีเซ็ต, help</li>
+          <li>ตอบกลับอัตโนมัติตามคำสั่งที่ได้รับ</li>
+          <li>ถ้าพิมพ์ผิดจะบอกว่าพิมพ์ไม่ถูก</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>7. จัดการคำสั่งต่างๆ</h3>
+        <ul>
+          <li><strong>สถานะ:</strong> ตอบกลับสัญญาณ Wi-Fi, IP, จำนวนพัสดุ, เวลาทำงาน</li>
+          <li><strong>จำนวนพัสดุ:</strong> บอกจำนวนพัสดุที่สะสมในตู้</li>
+          <li><strong>รีเซ็ต:</strong> ล้างตัวนับเป็น 0 เมื่อเอาพัสดุออกหมดแล้ว</li>
+          <li><strong>help:</strong> แสดงรายการคำสั่งทั้งหมด</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>8. วนลูปทำงานต่อ</h3>
+        <ul>
+          <li>กลับไปขั้นตอนที่ 2 เพื่อตรวจจับพัสดุใหม่</li>
+          <li>ทำงานต่อเนื่องตลอด 24 ชั่วโมง</li>
+          <li>ถ้า Wi-Fi หลุด จะพยายามเชื่อมต่อใหม่อัตโนมัติ</li>
+          <li>ถ้าเกิดข้อผิดพลาดร้ายแรง จะรีสตาร์ทตัวเอง</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top:30px;">
+      <p><strong>เคล็ดลับ:</strong> ถ้าต้องการเอาพัสดุออกแล้วไม่อยากให้นับรวม ให้ส่งคำสั่ง "รีเซ็ต" ไปที่บอท 
+      ระบบจะรีเซ็ตตัวนับเป็น 0 และไฟจะเปลี่ยนจากแดงเป็นเขียว พร้อมรับพัสดุใหม่</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  ตู้รับพัสดุอัจฉริยะพร้อมระบบแจ้งเตือน Telegram<br>
+  โครงงานนำเสนอเชิงวิชาการ
+</footer>
+
+<script>
+// Presentation System
+const sections = ['about', 'demo', 'components', 'build', 'config', 'generator', 'workflow'];
+const sectionNames = [
+  'เกี่ยวกับโครงงาน',
+  'วิดีโอสาธิต',
+  'อุปกรณ์ที่ใช้',
+  'วิธีการสร้าง',
+  'ตั้งค่าระบบ',
+  'เครื่องมือสร้างโค้ด',
+  'ขั้นตอนการทำงาน'
+];
+
+let currentSection = 0;
+let isPlaying = false;
+let presentationInterval;
+const SLIDE_DURATION = 8000; // 8 seconds per section
+
+// Initialize progress dots
+function initProgressDots() {
+  const dotsContainer = document.getElementById('progressDots');
+  dotsContainer.innerHTML = sections.map((_, i) => 
+    `<span class="${i === 0 ? 'active' : ''}" onclick="goToSection(${i})" style="cursor:pointer;" title="${sectionNames[i]}"></span>`
+  ).join('');
+}
+
+// Update progress dots
+function updateProgressDots() {
+  const dots = document.querySelectorAll('.progress-dots span');
+  dots.forEach((dot, i) => {
+    dot.classList.toggle('active', i === currentSection);
+  });
+}
+
+// Go to specific section
+function goToSection(index) {
+  if (index < 0 || index >= sections.length) return;
+  
+  currentSection = index;
+  const element = document.getElementById(sections[currentSection]);
+  
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('sectionName').textContent = `${currentSection + 1}/${sections.length} ${sectionNames[currentSection]}`;
+    updateProgressDots();
+  }
+}
+
+// Next section
+function nextSection() {
+  currentSection = (currentSection + 1) % sections.length;
+  goToSection(currentSection);
+}
+
+// Previous section
+function prevSection() {
+  currentSection = (currentSection - 1 + sections.length) % sections.length;
+  goToSection(currentSection);
+}
+
+// Toggle presentation mode
+function togglePresentation() {
+  isPlaying = !isPlaying;
+  const playBtn = document.getElementById('playBtn');
+  
+  if (isPlaying) {
+    playBtn.textContent = '⏸';
+    playBtn.title = 'หยุด';
+    startPresentation();
+  } else {
+    playBtn.textContent = '▶️';
+    playBtn.title = 'เล่น';
+    stopPresentation();
+  }
+}
+
+// Start auto presentation
+function startPresentation() {
+  presentationInterval = setInterval(() => {
+    nextSection();
+  }, SLIDE_DURATION);
+}
+
+// Stop auto presentation
+function stopPresentation() {
+  clearInterval(presentationInterval);
+}
+
+// Toggle fullscreen
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => {
+      console.log('Fullscreen error:', err);
+    });
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+// Keyboard controls
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') {
+    e.preventDefault();
+    nextSection();
+    showControls();
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    prevSection();
+    showControls();
+  } else if (e.key === 'Escape') {
+    if (isPlaying) togglePresentation();
+  } else if (e.key === 'f' || e.key === 'F') {
+    toggleFullscreen();
+  } else if (e.key === 'p' || e.key === 'P') {
+    e.preventDefault();
+    togglePresentation();
+  }
+});
+
+// Auto-hide controls
+let hideControlsTimeout;
+
+function showControls() {
+  const controls = document.querySelector('.presentation-controls');
+  controls.style.opacity = '1';
+  controls.style.pointerEvents = 'auto';
+  
+  clearTimeout(hideControlsTimeout);
+  hideControlsTimeout = setTimeout(() => {
+    if (isPlaying) {
+      controls.style.opacity = '0.3';
+      controls.style.pointerEvents = 'none';
+    }
+  }, 3000);
+}
+
+document.addEventListener('mousemove', showControls);
+document.addEventListener('click', showControls);
+
+// Theme Toggle
+function toggleTheme() {
+  const html = document.documentElement;
+  const icon = document.getElementById('theme-icon');
+  const currentTheme = html.getAttribute('data-theme');
+  
+  if (currentTheme === 'light') {
+    html.removeAttribute('data-theme');
+    icon.textContent = '🌙';
+    localStorage.setItem('theme', 'dark');
+  } else {
+    html.setAttribute('data-theme', 'light');
+    icon.textContent = '☀️';
+    localStorage.setItem('theme', 'light');
+  }
+}
+
+// Load saved theme
+window.addEventListener('DOMContentLoaded', () => {
+  const savedTheme = localStorage.getItem('theme');
+  const icon = document.getElementById('theme-icon');
+  
+  if (savedTheme === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    icon.textContent = '☀️';
+  }
+  
+  // Initialize presentation system
+  initProgressDots();
+  document.getElementById('sectionName').textContent = `1/${sections.length} ${sectionNames[0]}`;
+});
+
+// Code Generator
+const ids = ["ssid","pass","token","chatid","ir","red","green","debounce","cooldown","interval"];
+ids.forEach(id => document.getElementById(id).addEventListener("input", render));
+
+function render() {
+  const v = id => document.getElementById(id).value;
+
+  const generatedCode = `#include <ESP8266WiFi.h>
+#include <WiFiClientSecure.h>
+#include <UniversalTelegramBot.h>
+
+/* ================== CONFIG ================== */
+#define WIFI_SSID     "${v("ssid")}"
+#define WIFI_PASSWORD "${v("pass")}"
+
+#define BOT_TOKEN "${v("token")}"
+#define CHAT_ID  "${v("chatid")}"
+
+#define IR_PIN     ${v("ir")}
+#define LED_RED    ${v("red")}
+#define LED_GREEN  ${v("green")}
+
+/* ================== OBJECT ================== */
+WiFiClientSecure client;
+UniversalTelegramBot bot(BOT_TOKEN, client);
+
+/* ================== STATE ================== */
+volatile unsigned long irCount = 0;
+volatile bool irPulse = false;
+
+unsigned long lastTelegramSend = 0;
+unsigned long lastTelegramCheck = 0;
+unsigned long bootTime = 0;
+long lastUpdateId = 0;
+
+/* ===== IR DEBOUNCE ===== */
+volatile unsigned long lastIRTime = 0;
+const unsigned long IR_DEBOUNCE_MS = ${v("debounce")};
+
+/* ================== TIMING ================== */
+const unsigned long TG_SEND_COOLDOWN = ${v("cooldown")};
+const unsigned long TG_INTERVAL      = ${v("interval")};
+const unsigned long LED_BLINK_TIME   = 120;
+
+/* ================== LED BLINK STATE ================== */
+bool blinkActive = false;
+unsigned long blinkStart = 0;
+
+/* ================== INTERRUPT ================== */
+ICACHE_RAM_ATTR void irISR() {
+  unsigned long now = millis();
+  if (now - lastIRTime < IR_DEBOUNCE_MS) return;
+  lastIRTime = now;
+  irCount++;
+  irPulse = true;
+}
+
+/* ================== WIFI ================== */
+void connectWiFi() {
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  unsigned long start = millis();
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(300);
+    if (millis() - start > 15000) ESP.restart();
+  }
+}
+
+/* ================== SAFE SEND ================== */
+bool safeSend(String text) {
+  if (WiFi.status() != WL_CONNECTED) return false;
+  client.stop();
+  client.setInsecure();
+  return bot.sendMessage(CHAT_ID, text, "");
+}
+
+/* ================== LED ================== */
+void updateLED() {
+  if (irCount > 0) {
+    digitalWrite(LED_RED, HIGH);
+    digitalWrite(LED_GREEN, LOW);
+  } else {
+    digitalWrite(LED_RED, LOW);
+    digitalWrite(LED_GREEN, HIGH);
+  }
+}
+
+void blinkRedAsync() {
+  blinkActive = true;
+  blinkStart = millis();
+  digitalWrite(LED_RED, HIGH);
+  digitalWrite(LED_GREEN, LOW);
+}
+
+void handleBlink() {
+  if (!blinkActive) return;
+  if (millis() - blinkStart >= LED_BLINK_TIME) {
+    blinkActive = false;
+    updateLED();
+  }
+}
+
+/* ================== FORMAT ================== */
+String uptime() {
+  unsigned long s = (millis() - bootTime) / 1000;
+  return String(s / 3600) + "h " + String((s % 3600) / 60) + "m " + String(s % 60) + "s";
+}
+
+/* ================== TEXT NORMALIZE ================== */
+String norm(String t) {
+  t.toLowerCase();
+  t.replace("/", "");
+  t.replace(" ", "");
+  t.replace("\\n", "");
+  t.replace("\\r", "");
+  return t;
+}
+
+/* ================== SETUP ================== */
+void setup() {
+  Serial.begin(115200);
+  pinMode(IR_PIN, INPUT_PULLUP);
+  pinMode(LED_RED, OUTPUT);
+  pinMode(LED_GREEN, OUTPUT);
+
+  bootTime = millis();
+  updateLED();
+
+  connectWiFi();
+  client.setInsecure();
+
+  attachInterrupt(digitalPinToInterrupt(IR_PIN), irISR, FALLING);
+
+  int n = bot.getUpdates(0);
+  if (n > 0) lastUpdateId = bot.messages[n - 1].update_id;
+
+  safeSend("🤖 ระบบออนไลน์แล้ว\\nพิมพ์: สถานะ / จำนวนพัสดุ / รีเซ็ต / help");
+}
+
+/* ================== IR PROCESS ================== */
+void processIR() {
+  if (!irPulse) return;
+
+  blinkRedAsync();
+
+  if (millis() - lastTelegramSend > TG_SEND_COOLDOWN) {
+    safeSend("📦 ตรวจพบพัสดุ\\nรวมทั้งหมด: " + String(irCount));
+    lastTelegramSend = millis();
+  }
+
+  irPulse = false;
+}
+
+/* ================== TELEGRAM ================== */
+void handleTelegram() {
+  if (millis() - lastTelegramCheck < TG_INTERVAL) return;
+  lastTelegramCheck = millis();
+
+  if (WiFi.status() != WL_CONNECTED) {
+    connectWiFi();
+    return;
+  }
+
+  int n = bot.getUpdates(lastUpdateId + 1);
+  for (int i = 0; i < n; i++) {
+
+    lastUpdateId = bot.messages[i].update_id;
+    String raw = bot.messages[i].text;
+    String t = norm(raw);
+
+    if (t.indexOf("help") >= 0 || t.indexOf("ช่วย") >= 0) {
+      safeSend("คำสั่ง:\\nสถานะ\\nจำนวนพัสดุ\\nรีเซ็ต\\nhelp");
+
+    } else if (t.indexOf("status") >= 0 || t.indexOf("สถานะ") >= 0) {
+      String msg = "📡 STATUS\\n";
+      msg += "RSSI: " + String(WiFi.RSSI()) + " dBm\\n";
+      msg += "IP: " + WiFi.localIP().toString() + "\\n";
+      msg += "Count: " + String(irCount) + "\\n";
+      msg += "Uptime: " + uptime();
+      safeSend(msg);
+
+    } else if (t.indexOf("จำนวน") >= 0 || t.indexOf("พัสดุ") >= 0) {
+      safeSend("📊 จำนวนพัสดุ: " + String(irCount));
+
+    } else if (t.indexOf("รีเซ็ต") >= 0 || t.indexOf("ล้าง") >= 0) {
+      irCount = 0;
+      updateLED();
+      safeSend("♻️ รีเซ็ตตัวนับแล้ว");
+
+    } else {
+      safeSend("พิมพ์ไม่ตรง ลอง: สถานะ / จำนวนพัสดุ / รีเซ็ต / help");
+    }
+  }
+}
+
+/* ================== LOOP ================== */
+void loop() {
+  processIR();
+  handleTelegram();
+  handleBlink();
+}`;
+
+  document.getElementById("code").innerText = generatedCode;
+}
+
+function copyCode() {
+  const code = document.getElementById("code").innerText;
+  navigator.clipboard.writeText(code).then(() => {
+    const indicator = document.getElementById("copyIndicator");
+    indicator.classList.add("show");
+    setTimeout(() => indicator.classList.remove("show"), 2000);
+  });
+}
+
+function downloadCode() {
+  const code = document.getElementById("code").innerText;
+  const blob = new Blob([code], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'smart_parcel_locker.ino';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// Initialize
+render();
+</script>
+
+</body>
+</html>
