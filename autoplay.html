@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <meta name="theme-color" content="#0b0e14">
-  <title>Smart Parcel Locker – Telegram Notification System</title>
+  <title>Smart Parcel Locker – Auto Presentation</title>
 
   <style>
     :root{
@@ -26,11 +26,28 @@
       --accent:#3b82f6;
     }
 
-    *{box-sizing:border-box;margin:0;padding:0;font-family: system-ui, -apple-system, Segoe UI, sans-serif;}
-    body{background:var(--bg);color:var(--text);overflow-x:hidden;transition:background .3s, color .3s;}
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+    
+    html{
+      scroll-behavior: smooth;
+    }
+    
+    body{
+      background:var(--bg);
+      color:var(--text);
+      overflow-x:hidden;
+      transition:background .3s, color .3s;
+    }
 
     header{
-      position:sticky; top:0; z-index:100;
+      position:sticky; 
+      top:0; 
+      z-index:100;
       background:rgba(11,14,20,.95);
       backdrop-filter: blur(10px);
       border-bottom:1px solid var(--line);
@@ -112,13 +129,13 @@
       background:var(--surface);
       border:1px solid var(--line);
       border-radius:50px;
-      padding:12px 20px;
+      padding:14px 24px;
       display:flex;
       align-items:center;
       gap:16px;
       z-index:999;
       box-shadow:0 8px 30px rgba(0,0,0,.3);
-      transition:all .3s;
+      transition:opacity .3s, transform .3s;
     }
 
     .presentation-controls button{
@@ -127,18 +144,19 @@
       color:var(--text);
       cursor:pointer;
       font-size:20px;
-      padding:8px;
+      padding:10px;
       border-radius:8px;
       transition:.2s;
       display:flex;
       align-items:center;
       justify-content:center;
-      width:40px;
-      height:40px;
+      min-width:42px;
+      min-height:42px;
     }
 
     .presentation-controls button:hover{
       background:rgba(79,140,255,.15);
+      transform:scale(1.05);
     }
 
     .presentation-controls button:active{
@@ -146,9 +164,9 @@
     }
 
     .section-indicator{
-      font-size:13px;
+      font-size:14px;
       color:var(--muted);
-      min-width:200px;
+      min-width:220px;
       text-align:center;
       font-weight:500;
     }
@@ -159,56 +177,53 @@
     }
 
     .progress-dots span{
-      width:8px;
-      height:8px;
+      width:10px;
+      height:10px;
       border-radius:50%;
       background:var(--line);
       transition:.3s;
+      cursor:pointer;
+    }
+
+    .progress-dots span:hover{
+      background:var(--muted);
+      transform:scale(1.2);
     }
 
     .progress-dots span.active{
       background:var(--accent);
-      width:24px;
-      border-radius:4px;
-    }
-
-    /* Responsive controls */
-    @media(max-width:600px){
-      .presentation-controls{
-        bottom:20px;
-        padding:10px 16px;
-        gap:12px;
-      }
-      
-      .presentation-controls button{
-        width:36px;
-        height:36px;
-        font-size:18px;
-      }
-      
-      .section-indicator{
-        font-size:12px;
-        min-width:100px;
-      }
-      
-      .progress-dots{
-        gap:4px;
-      }
-      
-      .progress-dots span{
-        width:6px;
-        height:6px;
-      }
-      
-      .progress-dots span.active{
-        width:18px;
-      }
+      width:28px;
+      border-radius:5px;
     }
 
     main{
       max-width:1200px; 
       margin:auto; 
       padding:40px 16px 80px;
+    }
+
+    /* Smooth fade animation for sections */
+    section{
+      margin-top:80px;
+      opacity:0;
+      transform:translateY(30px);
+      animation:fadeInUp 0.8s ease-out forwards;
+    }
+
+    section.active{
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    @keyframes fadeInUp{
+      from{
+        opacity:0;
+        transform:translateY(30px);
+      }
+      to{
+        opacity:1;
+        transform:translateY(0);
+      }
     }
 
     .hero{
@@ -249,8 +264,6 @@
       border-radius:12px;
       background:black;
     }
-
-    section{margin-top:80px;}
 
     .section-title{
       font-size:clamp(18px, 4vw, 22px);
@@ -355,7 +368,6 @@
       border-color:var(--line);
     }
 
-    /* Generator Styles */
     .form-grid{
       display:grid;
       grid-template-columns:1fr;
@@ -480,6 +492,47 @@
       line-height:1.8;
     }
 
+    /* Responsive controls */
+    @media(max-width:600px){
+      .presentation-controls{
+        bottom:20px;
+        padding:10px 16px;
+        gap:12px;
+      }
+      
+      .presentation-controls button{
+        min-width:36px;
+        min-height:36px;
+        font-size:18px;
+      }
+      
+      .section-indicator{
+        font-size:12px;
+        min-width:100px;
+      }
+      
+      .progress-dots{
+        gap:4px;
+      }
+      
+      .progress-dots span{
+        width:6px;
+        height:6px;
+      }
+      
+      .progress-dots span.active{
+        width:18px;
+      }
+      
+      .actions{
+        flex-direction:column;
+      }
+      
+      .btn{
+        width:100%;
+      }
+    }
+
     /* Tablet and up */
     @media(min-width:600px){
       .grid{
@@ -586,7 +639,7 @@
 
 <main>
 
-  <section id="about" class="hero">
+  <section id="about" class="hero active">
     <div>
       <h1>ตู้รับพัสดุอัจฉริยะ แจ้งเตือนผ่าน Telegram</h1>
       <p>
@@ -1016,7 +1069,7 @@
 </footer>
 
 <script>
-// Presentation System
+// Presentation System with Smooth Scrolling
 const sections = ['about', 'demo', 'components', 'build', 'config', 'generator', 'workflow'];
 const sectionNames = [
   'เกี่ยวกับโครงงาน',
@@ -1031,13 +1084,13 @@ const sectionNames = [
 let currentSection = 0;
 let isPlaying = false;
 let presentationInterval;
-const SLIDE_DURATION = 8000; // 8 seconds per section
+const SLIDE_DURATION = 10000; // 10 seconds per section
 
 // Initialize progress dots
 function initProgressDots() {
   const dotsContainer = document.getElementById('progressDots');
   dotsContainer.innerHTML = sections.map((_, i) => 
-    `<span class="${i === 0 ? 'active' : ''}" onclick="goToSection(${i})" style="cursor:pointer;" title="${sectionNames[i]}"></span>`
+    `<span class="${i === 0 ? 'active' : ''}" onclick="goToSection(${i})" title="${sectionNames[i]}"></span>`
   ).join('');
 }
 
@@ -1049,7 +1102,7 @@ function updateProgressDots() {
   });
 }
 
-// Go to specific section
+// Smooth scroll to section
 function goToSection(index) {
   if (index < 0 || index >= sections.length) return;
   
@@ -1057,9 +1110,21 @@ function goToSection(index) {
   const element = document.getElementById(sections[currentSection]);
   
   if (element) {
-    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Smooth scroll with better easing
+    element.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'start'
+    });
+    
+    // Update indicator
     document.getElementById('sectionName').textContent = `${currentSection + 1}/${sections.length} ${sectionNames[currentSection]}`;
     updateProgressDots();
+    
+    // Add active class for fade animation
+    setTimeout(() => {
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      element.classList.add('active');
+    }, 100);
   }
 }
 
@@ -1127,6 +1192,7 @@ document.addEventListener('keydown', (e) => {
   } else if (e.key === 'Escape') {
     if (isPlaying) togglePresentation();
   } else if (e.key === 'f' || e.key === 'F') {
+    e.preventDefault();
     toggleFullscreen();
   } else if (e.key === 'p' || e.key === 'P') {
     e.preventDefault();
@@ -1140,19 +1206,30 @@ let hideControlsTimeout;
 function showControls() {
   const controls = document.querySelector('.presentation-controls');
   controls.style.opacity = '1';
-  controls.style.pointerEvents = 'auto';
+  controls.style.transform = 'translateX(-50%) translateY(0)';
   
   clearTimeout(hideControlsTimeout);
   hideControlsTimeout = setTimeout(() => {
     if (isPlaying) {
-      controls.style.opacity = '0.3';
-      controls.style.pointerEvents = 'none';
+      controls.style.opacity = '0.2';
+      controls.style.transform = 'translateX(-50%) translateY(10px)';
     }
   }, 3000);
 }
 
-document.addEventListener('mousemove', showControls);
-document.addEventListener('click', showControls);
+// Show controls on mouse move
+let mouseMoveTimeout;
+document.addEventListener('mousemove', () => {
+  showControls();
+  clearTimeout(mouseMoveTimeout);
+  mouseMoveTimeout = setTimeout(() => {
+    if (isPlaying) {
+      const controls = document.querySelector('.presentation-controls');
+      controls.style.opacity = '0.2';
+      controls.style.transform = 'translateX(-50%) translateY(10px)';
+    }
+  }, 3000);
+});
 
 // Theme Toggle
 function toggleTheme() {
@@ -1171,7 +1248,7 @@ function toggleTheme() {
   }
 }
 
-// Load saved theme
+// Load saved theme and initialize
 window.addEventListener('DOMContentLoaded', () => {
   const savedTheme = localStorage.getItem('theme');
   const icon = document.getElementById('theme-icon');
@@ -1411,18 +1488,19 @@ function downloadCode() {
   URL.revokeObjectURL(url);
 }
 
-// Smooth scroll
+// Smooth scroll for nav links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function (e) {
     e.preventDefault();
-    const target = document.querySelector(this.getAttribute('href'));
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const targetId = this.getAttribute('href').substring(1);
+    const targetIndex = sections.indexOf(targetId);
+    if (targetIndex !== -1) {
+      goToSection(targetIndex);
     }
   });
 });
 
-// Initialize
+// Initialize code generator
 render();
 </script>
 
